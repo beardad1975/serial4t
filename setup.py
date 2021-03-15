@@ -16,7 +16,7 @@ setuptools.setup(
     platforms=["Windows"],
     python_requires=">=3.5",
     packages=['serial4t','序列模組'],
-    install_requires = ['pyserial==3.4'],
+    install_requires = ['pyserial>=3.4'],
         classifiers=[
             "Programming Language :: Python :: 3",
             "License :: OSI Approved :: MIT License",
