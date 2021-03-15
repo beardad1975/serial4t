@@ -4,7 +4,7 @@ import os.path
 import platform
 
 __all__ = [ 
-            '序列連接', '序列連接microbit'
+            '序列連接', '連接microbit'
             
             ]
 
@@ -38,7 +38,7 @@ def 序列連接(埠, 傳輸率=115200, timeout=None):
     pass
 
 
-def 序列連接microbit(埠='auto', 例外錯誤=True ,傳輸率=115200, 讀取等待=None):
+def 連接microbit(埠='auto', 例外錯誤=True ,傳輸率=115200, 讀取等待=None):
     if 埠 == 'auto':
         #print('<< 自動偵測microbit.... >>')
         potential = detect_potential_ports()
@@ -79,7 +79,10 @@ class Connection():
             # serial connect
             try:
                 self.ser = serial.Serial(port, baudrate, timeout=timeout)
-                print('<< microbit已連接 ({}) >>'.format(port))
+                note_text = port
+                note_text += ' 有例外錯誤' if enable_exception else ' 無例外錯誤'
+                note_text += ' 不等待' if timeout == 0 else ' 等待'
+                print('<< microbit已連接 ({}) >>'.format(note_text))
             except serial.SerialException:
                 msg = '<< 連接microbit時發生錯誤 >>'
                 if self.enable_exception:
@@ -90,7 +93,7 @@ class Connection():
             # no port
             self.ser = None
 
-    def 傳送位元組(self, send_bytes):
+    def 傳送(self, send_bytes):
         if not self.ser:
             msg = '<< 沒有連接microbit >>'
             if self.enable_exception:
@@ -122,7 +125,8 @@ class Connection():
     #             print(msg)
     #             return
 
-    def 接收位元組(self, 位元組=1):
+    def 接收(self, 位元組=0):
+        # 位元組: 0或None讀取全部 ,  
         if not self.ser:
             msg = '<< 沒有連接microbit >>'
             if self.enable_exception:
@@ -135,7 +139,13 @@ class Connection():
             if self.timeout != 0:
                 print('<< 等待讀取microbit... >>')
 
-            return self.ser.read(size=位元組)
+            if 位元組 > 0:
+                return self.ser.read(size=位元組)
+            else:
+                # read all from input buffer
+                data_num = self.ser.in_waiting
+                #print('in_waiting: ', data_num)
+                return self.ser.read(size=data_num)
 
         except serial.SerialException:
             msg = '<< 讀取microbit時發生錯誤 >>'
